@@ -1,0 +1,143 @@
+﻿@using BlazorWASMAndAzureSql.Client.Services.SWService
+@using  Newtonsoft.Json.Linq;
+@inject ISuperheroService superheroService
+@inject ISWAPIService swapiservice
+@inject Radzen.DialogService dialogService
+
+@page "/"
+
+<h1>Get Something from <a class="alert-link" target="_blank" href="https://swapi.dev/">SWAPI</a></h1>
+
+<p>This component demonstrates fetching data from SWAPI, Need a hint? try people/1/ or planets/3/ or starships/9/</p>
+<p style="font-size : small"> resources can be used: people,films, starships, vehicles, species, planets.</p>
+<p style="font-size : small"> only people,species and planets can be saved into database.</p>
+<div class="row align-items-center">
+    <div>https://swapi.dev/api/</div>
+    <div> <RadzenTextBox Placeholder="people/1" @bind-Value="@UrlApi" Class="w-100" /></div>
+    <div>
+        <RadzenButton Click=@(args => OnClick(UrlApi)) Image="images/radzen-nuget.png" ButtonStyle="ButtonStyle.Light">
+            <span class="rz-button-text">REQUEST</span>
+            <RadzenImage Path="images/swapi.jpg" Style="width: 100px; height: 20px; margin-left: 8px;" />
+        </RadzenButton>
+    </div>
+</div>
+@if (!string.IsNullOrEmpty(SWAPIResult))
+{
+    <SWResult @ref="@SWResultComponent" SWQuestResult="@SWAPIResult" SWType="@SWtype" disableBTN="@disableBTN"></SWResult>
+
+}
+<div class="row " style="margin-top:20px; display: @displayMSG; color:brown">
+
+    <p>Result Not Found.</p>
+
+</div>
+
+
+
+
+@code{
+    private string UrlApi;
+    private string SWAPIResult;
+    private string SWtype;
+    SWResult SWResultComponent;
+
+    private List<Peoples> PeoplesList;
+    private List<Species> SpeciesList;
+    private List<Planets> planetsList;
+    public static List<string> termAccept = new List<string> { "planets", "people", "species" };
+    private bool disableBTN = false;
+    private string displayMSG = "none";
+
+    protected async override Task OnInitializedAsync()
+    {
+        PeoplesList = await superheroService.GetPeoplesListAsync();
+        SpeciesList = await superheroService.GetSpeciesListAsync();
+        planetsList = await superheroService.GetPlanetsListAsync();
+
+    }
+
+    private async Task OnClick(string msg)
+    {
+        SWAPIResult = null;
+        if (msg != null)
+        {
+            BusyDialog();
+            await Task.Delay(1000);
+            SWAPIResult = await swapiservice.CallSWAPI(msg);
+
+            if (SWAPIResult != null)
+            {
+                displayMSG = "none";
+                string[] strs = msg.Split("/");
+                SWtype = strs[0];
+
+                disableBTN = (!termAccept.Contains(SWtype) || strs.Length == 1) ? true : false;
+
+                if (!disableBTN)
+                {
+                    var nameValue = JObject.Parse(SWAPIResult)["name"].ToString();
+
+                    switch (SWtype)
+                    {
+                        case "people":
+                            var people = PeoplesList.Where(p => p.Name == nameValue).FirstOrDefault();
+                            if (people != null)
+                                disableBTN = true;
+                            break;
+                        case "species":
+                            var species = SpeciesList.Where(p => p.Name == nameValue).FirstOrDefault();
+                            if (species != null)
+                                disableBTN = true;
+                            break;
+                        case "planets":
+                            var entity = planetsList.Where(p => p.Name == nameValue).FirstOrDefault();
+                            if (entity != null)
+                                disableBTN = true;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                StateHasChanged();
+                SWResultComponent.reloadCompent();
+            }
+            else
+            {
+                displayMSG = "block";
+            }
+            dialogService.Close();
+
+        }
+    }
+    public void Dispose()
+    {
+        // The DialogService is a singleton so it is advisable to unsubscribe.
+        dialogService.OnOpen -= Open;
+        dialogService.OnClose -= Close;
+    }
+
+    void Open(string title, Type type, Dictionary<string, object> parameters, DialogOptions options)
+    {
+
+    }
+    void Close(dynamic result)
+    {
+
+    }
+
+   
+
+
+    async Task BusyDialog()
+    {
+        await dialogService.OpenAsync("", ds =>
+    @<div>
+        <div class="row">
+            <div class="col text-center p-5">
+                <RadzenImage Path="images/R.gif" Style="display: block; width: 200px; margin-bottom: 40px;" />
+                <b>Loading, please wait...</b>
+            </div>
+        </div>
+    </div>, new DialogOptions() { ShowTitle = false, Style = "min-height:auto;min-width:auto;width:auto", CloseDialogOnEsc = false });
+}
+}

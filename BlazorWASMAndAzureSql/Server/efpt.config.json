@@ -1,0 +1,51 @@
+﻿{
+   "CodeGenerationMode": 2,
+   "ContextClassName": "SuperheroContext",
+   "ContextNamespace": null,
+   "DefaultDacpacSchema": null,
+   "FilterSchemas": false,
+   "IncludeConnectionString": false,
+   "ModelNamespace": null,
+   "OutputContextPath": "databases\/DbContexts",
+   "OutputPath": "databases\/models",
+   "ProjectRootNamespace": "BlazorWASMAndAzureSql.Server",
+   "Schemas": null,
+   "SelectedHandlebarsLanguage": 0,
+   "SelectedToBeGenerated": 0,
+   "Tables": [
+      {
+         "Name": "[dbo].[Peoples]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[planets]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ref_planet_species]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Species]",
+         "ObjectType": 0
+      }
+   ],
+   "UiHint": "blazor-wa.Superhero",
+   "UseBoolPropertiesWithoutDefaultSql": false,
+   "UseDatabaseNames": false,
+   "UseDbContextSplitting": false,
+   "UseFluentApiOnly": true,
+   "UseHandleBars": false,
+   "UseHierarchyId": false,
+   "UseInflector": false,
+   "UseLegacyPluralizer": false,
+   "UseManyToManyEntity": false,
+   "UseNoConstructor": false,
+   "UseNoDefaultConstructor": false,
+   "UseNoNavigations": false,
+   "UseNoObjectFilter": false,
+   "UseNodaTime": false,
+   "UseNullableReferences": false,
+   "UseSchemaFolders": false,
+   "UseSpatial": false
+}

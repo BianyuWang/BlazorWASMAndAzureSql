@@ -1,0 +1,167 @@
+﻿
+
+@page "/fetchFromAzure"
+
+@inject ISuperheroService superheroService
+@inject NotificationService NotificationService
+<h1>Star Wars Data in my DB</h1>
+
+<p>This component demonstrates fetching data from the Asure DB.</p>
+@if (PeoplesList == null)
+{
+
+    <div class="row ">
+        <div class="col justify-content-center text-center p-5">
+            <RadzenImage Path="images/R.gif" Style="width: 200px; margin-bottom: 40px;" />
+            <br /> <b>Loading, please wait...</b>
+        </div>
+    </div>
+}
+else
+{
+    <RadzenCard>
+        <h4 class="mb-4">Peoples</h4>
+        <RadzenDataGrid @ref="@PeopleDataGrid" TItem="Peoples" Data="@PeoplesList" AllowColumnPicking="true">
+            <Columns>
+                <RadzenDataGridColumn TItem="Peoples" Property="Name" Title="Name" />
+                <RadzenDataGridColumn TItem="Peoples" Property="Height" Title="Height" />
+                <RadzenDataGridColumn TItem="Peoples" Property="Mass" Title="Mass" />
+                <RadzenDataGridColumn TItem="Peoples" Property="HairColor" Title="Hair Color">
+                    <Template Context="data">
+                        <span style="color:@data.HairColor">@data.HairColor</span>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Peoples" Property="SkinColor" Title="Skin Color" />
+                <RadzenDataGridColumn TItem="Peoples" Property="EyeColor" Title="Eye Color">
+                    <Template Context="data">
+                        <span style="color:@data.EyeColor">@data.EyeColor</span>
+                    </Template>
+                </RadzenDataGridColumn>
+
+
+                <RadzenDataGridColumn TItem="Peoples" Property="BirthYear" Title="Year of Birth" />
+                <RadzenDataGridColumn TItem="Peoples" Property="Gender" Title="Gender" />
+                <RadzenDataGridColumn TItem="Peoples" Property="Url" Title="Go to SWAPI">
+                    <Template Context="data">
+                        <a href="@data.Url" target="_blank"> SWAPI Link </a>
+
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Peoples" Context="data" Filterable="false" Sortable="false" TextAlign="Radzen.TextAlign.Center" Width="70px">
+                    <Template Context="data">
+                        <RadzenButton ButtonStyle="Radzen.ButtonStyle.Danger" Icon="close" Size="Radzen.ButtonSize.Small" Click="@(args => DeleteRow(data))" @onclick:stopPropagation="true">
+                        </RadzenButton>
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+    <RadzenCard>
+        <h4 class="mb-4">Species</h4>
+        <RadzenDataGrid @ref="SpeciesDataGrid" TItem="Species" Data="@SpeciesList" AllowColumnPicking="true">
+            <Columns>
+                @*<RadzenDataGridColumn TItem="Peoples" Property="EmployeeID" Title="ID" Width="50px" TextAlign="TextAlign.Center" />*@
+                <RadzenDataGridColumn TItem="Species" Property="Name" Title="Name" />
+                <RadzenDataGridColumn TItem="Species" Property="Classification" Title="Classification" />
+                <RadzenDataGridColumn TItem="Species" Property="Designation" Title="Designation" />
+                <RadzenDataGridColumn TItem="Species" Property="AverageHeight" Title="Average Height" />
+
+                <RadzenDataGridColumn TItem="Species" Property="AverageLifespan" Title="Average Life span" />
+
+
+                <RadzenDataGridColumn TItem="Species" Property="Language" Title="Language" />
+
+                <RadzenDataGridColumn TItem="Species" Property="Url" Title="Go to SWAPI">
+                    <Template Context="data">
+                        <a href="@data.Url" target="_blank"> SWAPI Link </a>
+
+                    </Template>
+                </RadzenDataGridColumn>
+
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+    <RadzenCard>
+        <h4 class="mb-4">Planets</h4>
+        <RadzenDataGrid @ref="PlanetDataGrid" TItem="Planets" Data="@planetsList" AllowColumnPicking="true">
+            <Columns>
+                @*<RadzenDataGridColumn TItem="Peoples" Property="EmployeeID" Title="ID" Width="50px" TextAlign="TextAlign.Center" />*@
+                <RadzenDataGridColumn TItem="Planets" Property="Name" Title="Name" />
+                <RadzenDataGridColumn TItem="Planets" Property="RotationPeriod" Title="Rotation Period" />
+                <RadzenDataGridColumn TItem="Planets" Property="OrbitalPeriod" Title="Orbital Period" />
+                <RadzenDataGridColumn TItem="Planets" Property="Diameter" Title="Diameter" />
+
+                <RadzenDataGridColumn TItem="Planets" Property="Climate" Title="Climate" />
+
+
+                <RadzenDataGridColumn TItem="Planets" Property="Gravity" Title="Gravity" />
+
+                <RadzenDataGridColumn TItem="Planets" Property="Terrain" Title="Terrain" />
+                <RadzenDataGridColumn TItem="Planets" Property="SurfaceWater" Title="Surface Water" />
+                <RadzenDataGridColumn TItem="Planets" Property="Population" Title="Population" />
+
+
+
+                <RadzenDataGridColumn TItem="Planets" Property="Url" Title="Go to SWAPI">
+                    <Template Context="data">
+                        <a href="@data.Url" target="_blank"> SWAPI Link </a>
+
+                    </Template>
+                </RadzenDataGridColumn>
+
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+}
+
+@code {
+
+    RadzenDataGrid<Peoples> PeopleDataGrid;
+    RadzenDataGrid<Species> SpeciesDataGrid;
+    RadzenDataGrid<Planets> PlanetDataGrid;
+
+
+    string emptyText = "No Items to display!";
+    private List<Peoples> PeoplesList;
+    private List<Species> SpeciesList;
+    private List<Planets> planetsList;
+
+    protected async override Task OnInitializedAsync()
+    {
+        PeoplesList = await superheroService.GetPeoplesListAsync();
+        SpeciesList = await superheroService.GetSpeciesListAsync();
+        planetsList = await superheroService.GetPlanetsListAsync();
+    }
+
+
+    async Task DeleteRow(Peoples people)
+    {
+        if (PeoplesList.Contains(people))
+        {
+
+            var result = await superheroService.DeletePeopleAsync(people.Id);
+            if (result != 0)
+            {
+                PeoplesList.Remove(people);
+
+                await PeopleDataGrid.Reload();
+                ShowNotification(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Deleted successfully", Detail = $"{people.Name} has been deleted from database",
+                    Style = "width: 400px;",
+                    Duration = 4000 });
+
+            }
+            else
+            {
+                ShowNotification(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Error! ", Detail = "Delete failed,Please contact Admin", Duration = 4000 });
+            }
+        }
+
+
+    }
+    void ShowNotification(NotificationMessage message)
+    {
+        NotificationService.Notify(message);
+
+    }
+
+}

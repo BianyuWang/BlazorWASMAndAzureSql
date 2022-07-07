@@ -2,11 +2,31 @@
 
 @page "/fetchFromAzure"
 
+
+@using System.Linq.Dynamic.Core
+
 @inject ISuperheroService superheroService
 @inject NotificationService NotificationService
+
+
+
 <h1>Star Wars Data in my DB</h1>
 
-<p>This component demonstrates fetching data from the Asure DB.</p>
+<p>Demo of using dynamic linq</p> 
+<div >
+    <div class="row">
+   
+            <h4 class="mb-4"> Search Query : </h4>
+            <div>
+                <RadzenTextBox @bind-Value="DyLinqStr" Class="w-100" />
+               </div>
+        <div><RadzenButton Click=@(args => OnClick(DyLinqStr)) Text="Search" />
+            </div>
+      
+    </div>
+</div>
+
+<p>These components demonstrates fetching data from the Asure DB.</p>
 @if (PeoplesList == null)
 {
 
@@ -120,19 +140,56 @@ else
     RadzenDataGrid<Species> SpeciesDataGrid;
     RadzenDataGrid<Planets> PlanetDataGrid;
 
-
+    string DyLinqStr;
     string emptyText = "No Items to display!";
     private List<Peoples> PeoplesList;
+    private List<Peoples> PeoplesListIni;
     private List<Species> SpeciesList;
     private List<Planets> planetsList;
 
     protected async override Task OnInitializedAsync()
     {
-        PeoplesList = await superheroService.GetPeoplesListAsync();
+        PeoplesListIni = await superheroService.GetPeoplesListAsync();
         SpeciesList = await superheroService.GetSpeciesListAsync();
         planetsList = await superheroService.GetPlanetsListAsync();
+
+        PeoplesList = PeoplesListIni;
     }
 
+
+
+
+    async Task OnClick(string linqStr)
+    {
+
+        if (!string.IsNullOrEmpty(linqStr))
+        {
+            var config = new ParsingConfig
+            {
+                UseParameterizedNamesInDynamicQuery = true
+            };
+            try
+            {
+
+                PeoplesList = ((List<Peoples>)PeoplesListIni.AsQueryable().Where(config, @linqStr).ToList());
+
+            }
+            catch (Exception e)
+            {
+                PeoplesList = new List<Peoples>();
+            }
+
+
+        }
+        else
+        {
+            PeoplesList = PeoplesListIni;
+        }
+
+
+        StateHasChanged();
+
+    }
 
     async Task DeleteRow(Peoples people)
     {
@@ -145,9 +202,14 @@ else
                 PeoplesList.Remove(people);
 
                 await PeopleDataGrid.Reload();
-                ShowNotification(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Deleted successfully", Detail = $"{people.Name} has been deleted from database",
+                ShowNotification(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Success,
+                    Summary = "Deleted successfully",
+                    Detail = $"{people.Name} has been deleted from database",
                     Style = "width: 400px;",
-                    Duration = 4000 });
+                    Duration = 4000
+                });
 
             }
             else

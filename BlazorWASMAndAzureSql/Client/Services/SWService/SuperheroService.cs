@@ -35,6 +35,11 @@ namespace BlazorWASMAndAzureSql.Client.Services.SWService
             return rsp;
         }
 
+        public Task<List<Peoples>> GetPeoplesListAsync(string linqStr)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<List<Planets>> GetPlanetsListAsync()
         {
             var rsp = await _httpClient.GetFromJsonAsync<List<Planets>>("api/Planets");

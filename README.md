@@ -13,3 +13,5 @@ The record can be added into the database if there are no identical records in t
 Users can also view and delete records.
 ![image](https://user-images.githubusercontent.com/54047263/174667718-b83fdefa-5d69-441a-bfc9-87626103f938.png)
 
+07/07 add dynamic linq search, only available for peoples table
+![image](https://user-images.githubusercontent.com/54047263/177852319-24ca0407-44f3-465c-acb0-79a7c909e132.png)
